@@ -1,0 +1,119 @@
+//`default_nettype none
+
+// Starter code for Project 4.  See README.md for details
+
+module ChipInterface
+  (input  logic       CLOCK_50,
+   input  logic [3:0] SW,
+   input  logic [1:0] KEY,
+	output logic led1,led2,
+   output logic [6:0] HEX5, HEX4, HEX3, HEX2, HEX1, HEX0);
+
+wire [1:0]is_operator;
+wire [7:0]dat_num,dat_op,dat;
+wire [7:0]A,B,display,result,finaldata;
+wire pop1,pop;
+wire clk,sel;
+/*
+Clock_divider clock_divider(
+    
+.clock_in, 
+.clock_05hz(clk), 
+.clock_1hz()
+);*/ 
+
+
+
+control_unit control(
+.sw(SW),
+.clk(CLOCK_50),
+.rst(KEY[1]),
+.key0(KEY[0]),
+.start(pop1),
+.data_o1(dat_num),
+.data_o2(dat_op),
+.display(display),
+.sel(sel),
+.led1(led1),
+.led2(led2)
+);
+
+
+register reg_num(
+.clk(CLOCK_50),
+.rst(KEY[1]),
+.data_in(dat_num),
+.data_o(A)
+);
+
+
+register reg_op(
+.clk(clk),
+.rst(KEY[1]),
+.data_in(dat_op),
+.data_o(B)
+
+);
+
+reg_start reg_start(
+.clk(clk),
+.rst(KEY[1]),
+.data(pop1),
+.data_o(pop)
+);
+
+alu alu(
+.clk(clk), 
+.rst(KEY[1]),
+.operator(B),
+.a(dat_num),
+.b(A),
+.pop(pop),
+.output_data(result)
+);
+
+
+mux_sel mux_sel(
+.display(display),
+.result(result),
+.sel(sel),
+.final_data(finaldata)
+);
+
+
+bcdtohex hex0
+  (
+    .bcd(finaldata[3:0]),
+   .segment(HEX0)
+   );
+
+bcdtohex hex1
+  (
+    .bcd(finaldata[7:4]),
+   .segment(HEX1)
+   );
+bcdtohex hex2
+  (
+    .bcd(4'b000),
+   .segment(HEX2)
+   );
+
+bcdtohex hex3
+  (
+    .bcd(4'b000),
+   .segment(HEX3)
+   );
+
+bcdtohex hex4
+  (
+    .bcd(4'b000),
+   .segment(HEX4)
+   );
+
+bcdtohex hex5
+  (
+    .bcd(4'b000),
+   .segment(HEX5)
+   );
+
+endmodule:ChipInterface
